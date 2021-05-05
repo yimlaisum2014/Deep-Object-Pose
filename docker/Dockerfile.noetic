@@ -3,10 +3,29 @@ FROM ros:noetic-robot
 # Copyright (c) 2020, NVIDIA CORPORATION. All rights reserved.
 # Full license terms provided in LICENSE.md file.
 # To build:
-# docker build -t nvidia-dope:noetic-v1 -f Dockerfile.noetic ..
+# docker build -t nvidia-dope:noetic-v2 -f Dockerfile.noetic ..
 
-ENV HOME /root
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
+###################################### user #####################################
+
+ENV SHELL=/bin/bash \
+    USER=arg-dope \
+    UID=1000 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8
+
+ENV HOME=/home/${USER}
+
+RUN adduser --disabled-password \
+    --gecos "Default user" \
+    --uid ${UID} \
+    ${USER} 
+
+RUN echo "root:root" | chpasswd
+RUN echo "${USER}:111111" | chpasswd
 
 # Install system and development components
 RUN apt-get update && apt-get -y --no-install-recommends install \
@@ -14,7 +33,12 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     software-properties-common \
     build-essential \
     cmake \
+    make \
     git \
+    sudo \
+    vim \
+    gedit \
+    wget \
     python3-pip \
     libxext6 \
     libx11-6 \
@@ -41,17 +65,38 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
   ros-noetic-rviz \
   && apt-get -y autoremove \
   && apt-get clean
+  
+######################################## realsense ########################################
+
+RUN apt-get update && apt-get install -y \
+    libsuitesparse-dev\
+    software-properties-common \
+    libusb-1.0-0-dev \
+    libx11-dev \
+    xorg-dev \
+    libgl1-mesa-dev \
+    libglu1-mesa-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# set the version of the realsense library
+ENV LIBREALSENSE_VERSION 2.36.0
+RUN wget https://github.com/IntelRealSense/librealsense/archive/v${LIBREALSENSE_VERSION}.tar.gz && \
+    tar -xvzf v${LIBREALSENSE_VERSION}.tar.gz && \
+    rm v${LIBREALSENSE_VERSION}.tar.gz && \
+    mkdir -p librealsense-${LIBREALSENSE_VERSION}/build && \
+    cd librealsense-${LIBREALSENSE_VERSION}/build && \
+    cmake .. && \
+    make && \
+    make install && \
+    rm -rf librealsense-${LIBREALSENSE_VERSION}
 
 # pip install required Python packages
 COPY requirements.txt ${HOME}
 RUN python3 -m pip install --no-cache-dir -r ${HOME}/requirements.txt
 
-# Setup catkin workspace
-ENV CATKIN_WS ${HOME}/catkin_ws
-COPY . ${CATKIN_WS}/src/dope
-COPY docker/init_workspace.sh ${HOME}
-RUN ${CATKIN_WS}/src/dope/docker/init_workspace.sh
-RUN echo "source ${CATKIN_WS}/devel/setup.bash" >> ${HOME}/.bashrc
+##################################### setting #####################################
+RUN chown -R ${USER}:${USER} ${HOME}/
+RUN echo "arg-dope ALL=(ALL)  ALL" > /etc/sudoers
 
 ENV DISPLAY :0
 ENV NVIDIA_VISIBLE_DEVICES all
@@ -59,3 +104,7 @@ ENV NVIDIA_DRIVER_CAPABILITIES graphics,utility,compute
 ENV TERM=xterm
 # Some QT-Apps don't show controls without this
 ENV QT_X11_NO_MITSHM 1
+
+USER ${USER}
+
+WORKDIR ${HOME}
