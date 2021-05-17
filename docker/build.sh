@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build -t nvidia-dope:noetic-v2 -f Dockerfile.noetic ..
+docker build --rm -t nvidia-dope:noetic-v3 -f Dockerfile.noetic .

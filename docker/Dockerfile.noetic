@@ -37,6 +37,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     git \
     sudo \
     vim \
+    net-tools \
     gedit \
     wget \
     python3-pip \
@@ -52,20 +53,21 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
 
 # Install required ROS components
 RUN apt-get update && apt-get -y --no-install-recommends install \
-  ros-noetic-cv-bridge \
-  ros-noetic-geometry-msgs \
-  ros-noetic-message-filters \
-  ros-noetic-resource-retriever \
-  ros-noetic-rospy \
-  ros-noetic-sensor-msgs \
-  ros-noetic-std-msgs \
-  ros-noetic-tf \
-  ros-noetic-vision-msgs \
-  ros-noetic-visualization-msgs \
-  ros-noetic-rviz \
-  && apt-get -y autoremove \
-  && apt-get clean
-  
+    ros-noetic-cv-bridge \
+    ros-noetic-geometry-msgs \
+    ros-noetic-message-filters \
+    ros-noetic-resource-retriever \
+    ros-noetic-rospy \
+    ros-noetic-sensor-msgs \
+    ros-noetic-std-msgs \
+    ros-noetic-tf \
+    ros-noetic-vision-msgs \
+    ros-noetic-visualization-msgs \
+    ros-noetic-rviz \
+    ros-noetic-rgbd-launch \
+    && apt-get -y autoremove \
+    && apt-get clean
+
 ######################################## realsense ########################################
 
 RUN apt-get update && apt-get install -y \
@@ -90,20 +92,24 @@ RUN wget https://github.com/IntelRealSense/librealsense/archive/v${LIBREALSENSE_
     make install && \
     rm -rf librealsense-${LIBREALSENSE_VERSION}
 
+#------------------------------------ dope ----------------------------------------
 # pip install required Python packages
 COPY requirements.txt ${HOME}
 RUN python3 -m pip install --no-cache-dir -r ${HOME}/requirements.txt
+#------------------------------------ dope ----------------------------------------
 
 ##################################### setting #####################################
 RUN chown -R ${USER}:${USER} ${HOME}/
 RUN echo "arg-dope ALL=(ALL)  ALL" > /etc/sudoers
 
+#------------------------------------ dope ----------------------------------------
 ENV DISPLAY :0
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES graphics,utility,compute
 ENV TERM=xterm
 # Some QT-Apps don't show controls without this
 ENV QT_X11_NO_MITSHM 1
+#------------------------------------ dope ----------------------------------------
 
 USER ${USER}
 

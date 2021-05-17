@@ -5,7 +5,7 @@
 
 CONTAINER_NAME=$1
 if [[ -z "${CONTAINER_NAME}" ]]; then
-    CONTAINER_NAME=nvidia-dope-v2
+    CONTAINER_NAME=nvidia-dope-v3
 fi
 
 # This specifies a mapping between a host directory and a directory in the
@@ -28,7 +28,24 @@ DOPE_ID=`docker ps -aqf "name=^/${CONTAINER_NAME}$"`
 if [ -z "${DOPE_ID}" ]; then
     echo "Creating new DOPE docker container."
     xhost +local:root
-    docker run --gpus all  -it --rm --privileged --network=host -v "/home/$USER/Deep_Object_Pose:/home/arg-dope/Deep_Object_Pose" -v /tmp/.X11-unix:/tmp/.X11-unix:rw --env="DISPLAY" --name=${CONTAINER_NAME} nvidia-dope:noetic-v2 bash
+    docker run --gpus all -it \
+    --rm \
+    -e DISPLAY \
+    -e QT_X11_NO_MITSHM=1 \
+    -e XAUTHORITY=$XAUTH \
+    -e ROS_MASTER_URI=$ROS_MASTER_URI \
+    -e ROS_IP=$ROS_IP \
+    -v "$XAUTH:$XAUTH" \
+    -v "/home/$USER/Deep_Object_Pose:/home/arg-dope/Deep_Object_Pose" \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+    -v "/etc/localtime:/etc/localtime:ro" \
+    -v "/dev:/dev" \
+    -v "/var/run/docker.sock:/var/run/docker.sock" \
+    --name=${CONTAINER_NAME} \
+    --privileged \
+    --network=host \
+    nvidia-dope:noetic-v3 \
+    bash
 else
     echo "Found DOPE docker container: ${DOPE_ID}."
     # Check if the container is already running and start if necessary.
