@@ -12,6 +12,9 @@ listening to an image topic and publishing poses.
 from __future__ import print_function
 
 import cv2
+import os
+import gdown
+import rospkg
 import message_filters
 import numpy as np
 import resource_retriever
@@ -400,12 +403,35 @@ def rotate_vector(vector, quaternion):
     vector = tf.transformations.quaternion_multiply(vector, quaternion)
     return vector[:3]
 
+def download_models():
+    r = rospkg.RosPack():
+    path = os.path.join(r.get_path('DOPE'), "weights")
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    models_l = [['bleach_28_dr.pth'     , 'https://drive.google.com/u/1/uc?id=15cfun8HGoYSfrmIdNBNcIzOOlbGC1d03&export=download'], \
+                ['cracker_60.pth'       , 'https://drive.google.com/u/1/uc?id=1eFl1WgC8i3SLPQ9GW8JQRhh3nKOmNK-p&export=download'], \
+                ['gelatin_60.pth'       , 'https://drive.google.com/u/1/uc?id=1aWouT27ouVtOdwNyl9LuRa2_JJ2Za5h3&export=download'], \
+                ['meat_20.pth'          , 'https://drive.google.com/u/1/uc?id=1kDx9dHSkYkjbC0kYlrCqGJTHKyRpoi7D&export=download'], \
+                ['mustard_60.pth'       , 'https://drive.google.com/u/1/uc?id=10eTzHinoe94t3389igNsUuw3jeja5nyG&export=download'], \
+                ['soup_60.pth'          , 'https://drive.google.com/u/1/uc?id=1YlbzOpkgIisMLKMlNUAYCgeO9xhAwyrC&export=download'], \
+                ['sugar_60.pth'         , 'https://drive.google.com/u/1/uc?id=1cv6I091tA25Hlw2royAcULaJ331HQWWH&export=download']]
+
+    print("\nLoading {} models:".format(len(models_l)))
+
+    for models_name, models_url in models_l:
+        print("{:22}".format(models_name), models_url)
+        if not os.path.isfile(os.path.join(path, models_name)):
+            gdown.download(models_url, output=os.path.join(path, models_name), quiet=True)
+
+    print("\nFinished downloading models.")
 
 def main():
     """Main routine to run DOPE"""
 
     # Initialize ROS node
     rospy.init_node('dope')
+    download_models()
     DopeNode()
 
     try:
