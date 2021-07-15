@@ -19,6 +19,7 @@ import message_filters
 import numpy as np
 import resource_retriever
 import rospy
+import tf
 import tf.transformations
 from PIL import Image
 from PIL import ImageDraw
@@ -109,6 +110,7 @@ class DopeNode(object):
         self.mesh_scales = {}
         self.cv_bridge = CvBridge()
         self.prev_num_detections = 0
+        self.listener = tf.TransformListener()
 
         self.input_is_rectified = rospy.get_param('~input_is_rectified', True)
         self.downscale_height = rospy.get_param('~downscale_height', 500)
@@ -164,6 +166,12 @@ class DopeNode(object):
             self.pubs[model] = \
                 rospy.Publisher(
                     '{}/pose_{}'.format(rospy.get_param('~topic_publishing'), model),
+                    PoseStamped,
+                    queue_size=10
+                )
+            self.pub_transform[model] = \
+                rospy.Publisher(
+                    '{}/transform/pose_{}'.format(rospy.get_param('~topic_publishing'), model),
                     PoseStamped,
                     queue_size=10
                 )
@@ -288,8 +296,12 @@ class DopeNode(object):
                 pose_msg.pose.orientation.z = transformed_ori[2]
                 pose_msg.pose.orientation.w = transformed_ori[3]
 
+                # Convert pose to base link
+                base_link_pose = self.transform_pose(pose_msg.pose, 'base_link', pose_msg.header.frame_id)
+
                 # Publish
                 self.pubs[m].publish(pose_msg)
+                self.pub_transform[m].publish(base_link_pose)
                 self.pub_dimension[m].publish(str(dims))
 
                 # Add to Detection3DArray
@@ -394,6 +406,38 @@ class DopeNode(object):
 
         self.pub_markers.publish(markers)
 
+    def transform_pose(self, pose, target_frame, source_frame):
+		try:
+			(trans_c, rot_c) = self.listener.lookupTransform(
+				target_frame, source_frame, rospy.Time(0))
+		except (tf.Exception, tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+			rospy.logerr("faile to catch tf %s 2 %s" %
+						 (target_frame, source_frame))
+			return
+
+		trans_mat = tf.transformations.translation_matrix(trans_c)
+		rot_mat = tf.transformations.quaternion_matrix(rot_c)
+		tran_mat = np.dot(trans_mat, rot_mat)
+
+		target_mat = np.array([[1, 0, 0, pose.position.x],
+							   [0, 1, 0, pose.position.y],
+							   [0, 0, 1, pose.position.z],
+							   [0, 0, 0, 1]])
+		target = np.dot(tran_mat, target_mat)
+		quat = tf.transformations.quaternion_from_matrix(target)
+		trans = tf.transformations.translation_from_matrix(target)
+
+		t_pose = PoseStamped()
+		t_pose.header.frame_id = target_frame
+		t_pose.pose.position.x = trans[0]
+		t_pose.pose.position.y = trans[1]
+		t_pose.pose.position.z = trans[2]
+		t_pose.pose.orientation.x = quat[0]
+		t_pose.pose.orientation.y = quat[1]
+		t_pose.pose.orientation.z = quat[2]
+		t_pose.pose.orientation.w = quat[3]
+
+		return t_pose
 
 def rotate_vector(vector, quaternion):
     q_conj = tf.transformations.quaternion_conjugate(quaternion)
@@ -404,7 +448,7 @@ def rotate_vector(vector, quaternion):
     return vector[:3]
 
 def download_models():
-    r = rospkg.RosPack():
+    r = rospkg.RosPack()
     path = os.path.join(r.get_path('DOPE'), "weights")
     if not os.path.exists(path):
         os.makedirs(path)
