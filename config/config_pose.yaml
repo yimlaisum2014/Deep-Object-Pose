@@ -9,15 +9,15 @@ weights: {
     # "cracker":"package://dope/weights/cracker_60.pth",
     # "gelatin":"package://dope/weights/gelatin_60.pth",
     # "meat":"package://dope/weights/meat_20.pth",
-     "mustard":"package://dope/weights/mustard_60.pth",
-    # "soup":"package://dope/weights/soup_60.pth",
-    # "sugar":"package://dope/weights/sugar_60.pth",
+    # "mustard":"package://dope/weights/mustard_60.pth",
+    #"soup":"package://dope/weights/soup_60.pth",
+    "sugar":"package://dope/weights/sugar_60.pth",
     # "bleach":"package://dope/weights/bleach_28_dr.pth"
     
     # NEW OBJECTS - HOPE
     # "AlphabetSoup":"package://dope/weights/AlphabetSoup.pth", 
     # "BBQSauce":"package://dope/weights/BBQSauce.pth", 
-    # "Butter":"package://dope/weights/Butter.pth", 
+     "Butter":"package://dope/weights/Butter.pth", 
     # "Cherries":"package://dope/weights/Cherries.pth", 
     # "ChocolatePudding":"package://dope/weights/ChocolatePudding.pth", 
     # "Cookies":"package://dope/weights/Cookies.pth", 
@@ -39,7 +39,7 @@ weights: {
     # "OrangeJuice":"package://dope/weights/OrangeJuice.pth", 
     # "Raisins":"package://dope/weights/Raisins.pth",
     # "SaladDressing":"package://dope/weights/SaladDressing.pth",
-    # "Spaghetti":"package://dope/weights/Spaghetti.pth",
+     "Spaghetti":"package://dope/weights/Spaghetti.pth",
     # "TomatoSauce":"package://dope/weights/TomatoSauce.pth",
     # "Tuna":"package://dope/weights/Tuna.pth",
     # "Yogurt":"package://dope/weights/Yogurt.pth",
@@ -166,6 +166,8 @@ mesh_scales: {
     "sugar":   0.01,
     "bleach":  0.01,
 }
+
+overlay_belief_images: True   # Whether to overlay the input image on the belief images published on /dope/belief_[obj_name]
 
 # Config params for DOPE
 thresh_angle: 0.5
