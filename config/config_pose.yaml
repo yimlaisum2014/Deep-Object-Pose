@@ -15,7 +15,7 @@ weights: {
     # "bleach":"package://dope/weights/bleach_28_dr.pth"
     # Demo 
     "Small_Cup":"package://dope/weights/net_medical_cup_95.pth",
-    "Water_Cup":"package://dope/weights/net_water_cup_69.pth"
+    "Water_Cup":"package://dope/weights/net_water_cup_69.pth" ,
     # NEW OBJECTS - HOPE
     # "AlphabetSoup":"package://dope/weights/AlphabetSoup.pth", 
     # "BBQSauce":"package://dope/weights/BBQSauce.pth", 
