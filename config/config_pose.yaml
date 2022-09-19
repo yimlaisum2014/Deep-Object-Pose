@@ -15,6 +15,7 @@ weights: {
     # "bleach":"package://dope/weights/bleach_28_dr.pth"
     # Demo 
     "Small_Cup":"package://dope/weights/net_medical_cup_95.pth",
+    "Water_Cup":"package://dope/weights/net_water_cup_69.pth"
     # NEW OBJECTS - HOPE
     # "AlphabetSoup":"package://dope/weights/AlphabetSoup.pth", 
     # "BBQSauce":"package://dope/weights/BBQSauce.pth", 
@@ -50,6 +51,7 @@ weights: {
 # Cuboid dimension in cm x,y,z
 dimensions: {
     "Small_Cup" :[4.95, 4.93, 4.95],
+    "Water_Cup": [7.95, 9.93, 7.95],
     # "cracker": [16.403600692749023,21.343700408935547,7.179999828338623],
     # "gelatin": [8.918299674987793, 7.311500072479248, 2.9983000755310059],
     # "meat": [10.164673805236816,8.3542995452880859,5.7600898742675781],
@@ -91,6 +93,7 @@ dimensions: {
 
 class_ids: {
     "Small_Cup": 1,
+    "Water_Cup": 3,
     # "cracker": 1,
     # "gelatin": 2,
     # "meat":    3,
@@ -130,6 +133,7 @@ class_ids: {
 
 draw_colors: {
     "Small_Cup": [13, 255, 128],
+     "Water_Cup": [13, 255, 128],
     "GranolaBars" : [13, 255, 128],
     # "cracker": [13, 255, 128],  # green
     # "gelatin": [255, 255, 255],  # while
@@ -165,6 +169,7 @@ meshes: {
 mesh_scales: {
     "Small_Cup": 0.01,
     "GranolaBars": 0.01,
+    "Water_Cup": 0.01,
     # "cracker": 0.01,
     # "gelatin": 0.01,
     # "meat":    0.01,
